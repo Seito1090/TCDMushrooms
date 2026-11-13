@@ -9,7 +9,6 @@ Expected output : Yes/No
 
 Unwanted output : Maybe 
 
-
 ## Structure of the repo 
 
 For ease of maintenance, it would be nice to separate different aspects of the project. 
@@ -24,3 +23,18 @@ With this in mind, the main directories would be :
 
 ## Data sets sources  
 -  https://www.openml.org/search?type=data&sort=runs&id=24&status=active
+
+## How to run
+
+We follow the same principle as the practicals in class, using a virtual environment. 
+
+The required packages are : 
+- numpy
+- matplotlib
+- seaborn
+- scipy
+- pandas 
+
+You can either set up the venv yourself, or use the script for your system
+- linux : ``` bash setup.sh ```
+- windows : ``` setup.bat ``` 
