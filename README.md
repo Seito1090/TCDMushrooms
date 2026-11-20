@@ -37,6 +37,6 @@ The required packages are : 
 
 You can either set up the venv yourself, or use the script for your system
 - linux : ``` bash setup.sh ```
-- windows : ``` setup.bat ``` 
+- windows : ``` .\setup.bat ``` 
 
 Note : If you do not have the data and / or the graphs directory, create it 

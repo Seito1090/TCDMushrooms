@@ -6,7 +6,7 @@ cd /d "%~dp0"
 python -m venv .venv
 if errorlevel 1 exit /b %errorlevel%
 
-".venv\Scripts\python.exe" -m pip install seaborn numpy matplotlib scipy pandas ipykernel
+".venv\Scripts\python.exe" -m pip install seaborn numpy matplotlib scipy pandas ipykernel scikit-learn
 if errorlevel 1 exit /b %errorlevel%
 
 echo Setup complete. Activate the environment with:
