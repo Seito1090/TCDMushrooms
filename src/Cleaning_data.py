@@ -73,7 +73,6 @@ df_clean.to_csv("mushrooms_cleaned.csv", index=False)
 
 
 #Graph 1 — Edible vs poisonous mushrooms
-import matplotlib.pyplot as plt
 
 counts = df_clean["class"].value_counts()
 counts = counts.rename({"e": "Edible", "p": "Poisonous"})
@@ -143,7 +142,7 @@ plt.show()
 #-----------------------------------------------------
 #Information gain
 
-import numpy as np
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mutual_info_score
 
@@ -261,5 +260,216 @@ ConfusionMatrixDisplay.from_predictions(
 )
 
 plt.title("Decision Tree Confusion Matrix")
+plt.tight_layout()
+plt.show()
+
+
+
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.base import clone
+import matplotlib.pyplot as plt
+
+depths = range(1, 21)
+
+train_accuracy = []
+validation_accuracy = []
+
+for depth in depths:
+
+    model = Pipeline([
+        ("preprocess", clone(preprocessor)),
+        ("classifier", DecisionTreeClassifier(
+            criterion="entropy",
+            max_depth=depth,
+            random_state=42
+        ))
+    ])
+
+    # Training accuracy
+    model.fit(X_train, y_train)
+    train_accuracy.append(model.score(X_train, y_train))
+
+    # 5-fold cross-validation on training data
+    scores = cross_val_score(
+        model, X_train, y_train,
+        cv=5, scoring="accuracy"
+    )
+
+    validation_accuracy.append(scores.mean())
+
+# Plot
+plt.figure(figsize=(9, 5))
+
+plt.plot(depths, train_accuracy,
+         marker="o", label="Training Accuracy")
+
+plt.plot(depths, validation_accuracy,
+         marker="s", label="Validation Accuracy")
+
+plt.xlabel("Maximum Tree Depth")
+plt.ylabel("Accuracy")
+plt.title("Effect of Tree Depth on Model Accuracy")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Best depth based on validation accuracy
+best_depth = depths[
+    validation_accuracy.index(max(validation_accuracy))
+]
+
+print("Best tree depth:", best_depth)
+print("Best validation accuracy:",
+      max(validation_accuracy))
+
+
+
+best_tree = Pipeline([
+    ("preprocess", clone(preprocessor)),
+    ("classifier", DecisionTreeClassifier(
+        criterion="entropy",
+        max_depth=best_depth,
+        random_state=42
+    ))
+])
+
+best_tree.fit(X_train, y_train)
+
+# Final evaluation on the held-out test set
+from sklearn.metrics import classification_report
+
+final_predictions = best_tree.predict(X_test)
+
+print(classification_report(
+    y_test,
+    final_predictions,
+    labels=["p", "e"],
+    target_names=["Poisonous", "Edible"]
+))
+
+
+
+
+from sklearn.tree import plot_tree
+
+feature_names = (
+    best_tree.named_steps["preprocess"]
+    .get_feature_names_out()
+)
+
+plt.figure(figsize=(18, 9))
+
+plot_tree(
+    best_tree.named_steps["classifier"],
+    feature_names=feature_names,
+    class_names=["Edible", "Poisonous"],
+    filled=True,
+    rounded=True,
+    max_depth=3,
+    fontsize=8
+)
+
+plt.title("Mushroom Classification Decision Tree")
+plt.tight_layout()
+plt.show()
+
+
+#------------------------------------------------------
+#KNN
+
+# KNN — Step 1: Data Preparation
+
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import (
+    accuracy_score,
+    recall_score,
+    classification_report,
+    ConfusionMatrixDisplay
+)
+
+# Use the existing X_train and y_train
+# Split training data into development and validation
+X_dev, X_val, y_dev, y_val = train_test_split(
+    X_train,
+    y_train,
+    test_size=0.20,
+    random_state=42,
+    stratify=y_train
+)
+
+# Identify numerical and categorical features
+numeric_cols = X_train.select_dtypes(
+    include="number"
+).columns.tolist()
+
+categorical_cols = X_train.select_dtypes(
+    include="object"
+).columns.tolist()
+
+# Preprocessing for KNN
+knn_preprocessor = ColumnTransformer([
+    ("num", Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler())
+    ]), numeric_cols),
+
+    ("cat", Pipeline([
+        ("imputer", SimpleImputer(
+            strategy="constant",
+            fill_value="Missing"
+        )),
+        ("encoder", OneHotEncoder(
+            handle_unknown="ignore"
+        ))
+    ]), categorical_cols)
+])
+
+
+# KNN — Step 2: Build Model
+
+knn_model = Pipeline([
+    ("preprocess", knn_preprocessor),
+    ("classifier", KNeighborsClassifier(
+        n_neighbors=5,
+        weights="uniform",
+        n_jobs=-1
+    ))
+])
+
+# Train
+knn_model.fit(X_dev, y_dev)
+
+# Predict on validation data
+knn_pred = knn_model.predict(X_val)
+
+# Evaluation
+print("KNN Validation Accuracy:",
+      accuracy_score(y_val, knn_pred))
+
+print(classification_report(
+    y_val,
+    knn_pred,
+    labels=["p", "e"],
+    target_names=["Poisonous", "Edible"]
+))
+
+# Confusion matrix
+ConfusionMatrixDisplay.from_predictions(
+    y_val,
+    knn_pred,
+    labels=["e", "p"],
+    display_labels=["Edible", "Poisonous"]
+)
+
+plt.title("KNN Confusion Matrix (k=5)")
 plt.tight_layout()
 plt.show()
