@@ -151,7 +151,7 @@
 @attribute 'cap-shape' { 'b', 'c', 'f', 'k', 's', 'x'}
 @attribute 'cap-surface' { 'f', 'g', 's', 'y'}
 @attribute 'cap-color' { 'b', 'c', 'e', 'g', 'n', 'p', 'r', 'u', 'w', 'y'}
-@attribute 'bruises%3F' { 'f', 't'}
+@attribute 'does-bruise-or-bleed' { 'f', 't'}
 @attribute 'odor' { 'a', 'c', 'f', 'l', 'm', 'n', 'p', 's', 'y'}
 @attribute 'gill-attachment' { 'a', 'd', 'f', 'n'}
 @attribute 'gill-spacing' { 'c', 'd', 'w'}
